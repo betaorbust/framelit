@@ -1,15 +1,95 @@
-/*global
-module: true,
-require: true,
-*/
+/* jshint strict: false */
+/*global module: true, require: true */
 
 var path = require('path');
 /*jshint -W079 */
 var _ = require('underscore');
 /*jshint +W079 */
 
+
 module.exports = function(grunt) {
 	'use strict';
+	// =================
+	// = Configuration =
+	// =================
+
+	/**
+	 * General idea for full production build
+	 * js
+	 * 	-> external
+	 * 		Concatenated, but not minified to [JS_MIN_PATH]/external.min.js.
+	 * 	-> site
+	 * 		Minified and concatenated into [MINIFIED_JS].
+	 * 	-> standalone
+	 * 		-> libs
+	 * 			Copied to [JS_MIN_PATH]/standalone/libs/[existing path]
+	 * 		-> site
+	 * 			Minified by directory to [JS_MIN_PATH]/standalone/site/[libraryname].min.js
+	 * 			Example: standalone/site/mylib/[mylibmain.js, mylibsupport.js]
+	 * 						-> [JS_MIN_PATH]/standalone/site/mylib.min.js
+	 * 			This is done alphabetically (for now), so if you're doing any runtime screwiness
+	 * 			(don't) then make sure your files are in the correct order.
+	 * css
+	 * 	-> components
+	 * 		Nothing happens. Not available after build. Use only to reference/include
+	 * 		from during builds. (stuff like bootstrap components can go here)
+	 * 	-> external
+	 * 		LESS'd and concatenated to the beginning of [MINIFIED_CSS]. If you don't want these files
+	 * 		in your main build, include them separately by using /standalone.
+	 * 		This is done alphabetically by default, but can be reordered from the "CSS_SITE"
+	 * 		variable in this file.
+	 * 	-> site
+	 * 		LESS'd and concatenated to the end of [MINIFIED_CSS]. This is done alphabetically by
+	 * 		default, but can be reordered from the "CSS_SITE" variable in this file.
+	 *  -> standalone
+	 *  	-> libs
+	 *  		Minified by directory to [CSS_MIN_PATH]/standalone/libs/[library name].min.css
+	 *  	-> site
+	 *  		Minified by directory to [CSS_MIN_PATH]/standalone/site/[library name].min.css
+	 */
+	var JS_EXTERNAL = [
+			//'external/jquery/*min.js',
+			'external/{,**/}*.js'
+		],
+		JS_EXTERNAL_SOURCE_MAPS = [
+			'external/{,**/}*.min.js.map'
+		],
+		JS_SITE = [
+			'site/{,**/}*.js'
+		],
+		JS_STANDALONE_LIBS = [
+			'standalone/libs/{,**/}*.js'
+		],
+		JS_STANDALONE_SITE = [
+			'standalone/site/{,**/}*.js'
+		],
+		CSS_SITE = [
+			// When including a specific file here, make sure to include both the css and
+			// less file versions as this is used both pre and post less-ification.
+			//'external/bootstrap/bootstrap.(less|css)'
+			'external/{,**/}*.(less|css)',
+			'site/{,**/}*.(less|css)'
+		],
+		CSS_STANDALONE_LIBS = [
+			'standalone/libs/{,**/}*.(less|css)'
+		];
+
+
+	// Base File Paths - always include the trailing slash
+	var STATIC_BASE_PATH = 'static/',
+		MINIFIED_BASE_PATH = STATIC_BASE_PATH + 'minified/',
+		MINIFIED_INCLUDE_NAME = 'framelit',
+		JS_PATH = STATIC_BASE_PATH + '/js/',
+		JS_MIN_PATH = MINIFIED_BASE_PATH + 'js_min/',
+		MINIFIED_JS = JS_MIN_PATH + MINIFIED_INCLUDE_NAME + '.min.js',
+		SERVING_JS_PATH = JS_MIN_PATH, // IF you have a different serving path, change this.
+		CSS_PATH = STATIC_BASE_PATH + 'css/',
+		CSS_MIN_PATH = MINIFIED_BASE_PATH + 'css_min/',
+		SERVING_CSS_PATH = CSS_MIN_PATH, // IF you have a different serving path, change this.
+		MINIFIED_CSS = CSS_MIN_PATH + MINIFIED_INCLUDE_NAME + '.min.css',
+		CURRENT_VERSION = (new Date()).getTime();
+
+
 	// Utility function: prepends a prefix to each item in
 	// a list of file paths/glob expressions
 	function prefixPaths(prefix, filePaths) {
@@ -18,64 +98,12 @@ module.exports = function(grunt) {
 		});
 	}
 
-
 	// Load all grunt modules except grunt-cli, since that's not used in the build
 	require('matchdep').filterAll(['grunt-*', '!grunt-cli']).forEach(grunt.loadNpmTasks);
 
-	// Uncomment to enable timing information for tasks
+	// Comment out to disable timing information for tasks
 	require('time-grunt')(grunt);
 
-	// =================
-	// = Configuration =
-	// =================
-
-	// For the devwatch task only: how long to wait after a file has
-	// changed to see if more files change and can be recompiled in
-	// the same run. In milliseconds.
-	var fileWatcherBatchTimespan = 200;
-
-	// Base File Paths - always include the trailing slash
-	// These must be kept in sync with the livereload gruntfile!
-	var STATIC_BASE_PATH = 'static/',
-		MINIFIED_BASE_PATH = STATIC_BASE_PATH + 'minified/',
-		JS_PATH = STATIC_BASE_PATH + '/js/',
-		JS_MIN_PATH = MINIFIED_BASE_PATH + 'js_min/',
-		CSS_PATH = STATIC_BASE_PATH + 'css/',
-		CSS_MIN_PATH = MINIFIED_BASE_PATH + 'css_min/',
-		SERVER_TEMPLATES_PATH = STATIC_BASE_PATH + 'include_templates/',
-		JS_INCLUDES_FILE_PATH = SERVER_TEMPLATES_PATH + 'js_includes.html',
-		CSS_INCLUDES_FILE_PATH = SERVER_TEMPLATES_PATH + 'css_includes.html',
-		SERVING_JS_PATH = JS_MIN_PATH,
-		SERVING_CSS_PATH = CSS_MIN_PATH;
-
-	// List of all our less assets, to be compiled and run. Relative to CSS_PATH.
-	// This is a list of relative paths, not strictly glob patterns, and will
-	// have path prefixes prepended to it in some build modes, so be wary!
-	var stylesheets = [
-		// 'external/bootstrap/*.less',
-		// 'external/jquery/no-theme/*.css',
-		// 'external/**/*.less',
-		// 'udacity/{,**/}*.less'
-	];
-
-	// All libraries you want to be included - add base dependencies first,
-	// everything else will be picked up by the last glob.
-	// All paths are processed relative to JS_PATH.
-	var libs = [
-		'external/jquery/*min.js',
-		'external/{,**/}*min.js'
-	];
-
-	var jsLibSourceMaps = [
-		'external/angular/**/*.min.js.map'
-	];
-
-	// List of all our js assets
-	var siteJSAssets = [
-		// 'angular/*.js',
-		// 'angular/{,**/}*.js',
-		'site/{,**/}*.js'
-	];
 
 
 	// Processing of standalone files - autominify anything in a dir under
@@ -100,39 +128,40 @@ module.exports = function(grunt) {
 	}
 
 	var standaloneJSMinifyFilesMap = makeMinificationMap(JS_PATH, JS_MIN_PATH, 'js', 'js');
-	var standaloneCSSMinifyFilesMap = makeMinificationMap(CSS_PATH, CSS_MIN_PATH, 'less', 'css');
+	var standaloneCSSMinifyFilesMap = makeMinificationMap(CSS_PATH, CSS_MIN_PATH, '(less|css)', 'css');
 
 	grunt.registerTask('createIncludeFiles', function () {
 		// Paths and ordering for the includes files
-		var jsIncludes = grunt.file.expand({
-			'cwd': JS_MIN_PATH
-		}, [
-			// Ensure libs are loaded in the correct order
-			'external/{,**/}*.js',
-			'site/{,**/}*.js'
-		]);
+		var jsIncludes = grunt.file.expand(
+				{'cwd': JS_MIN_PATH},
+				JS_EXTERNAL.concat(JS_SITE)
+			);
 
 		// If there are any css files that need to be loaded first,
 		// include them here directly under css_min (ex: bootstrap.css)
 		var styleIncludes = grunt.file.expand({
 			'cwd': CSS_MIN_PATH
-		}, [
-			'external/{,**/}*.css',
-			'site/{,**/}*.css'
-		]);
-
+		}, CSS_SITE);
+		// Injects every jsInclude manually.
 		grunt.config.set('createFile', {
 			'jsIncludes': {
-				'content': (_.reduce(jsIncludes, function (total, curr) {
-					return total + '<script type="text/javascript" src="' + SERVING_JS_PATH + curr + '?VERSION_SHOULD_GO_HERE"></script>\n';
-				}, '')),
-				'file': JS_INCLUDES_FILE_PATH
+				'content': '(function(document, undefined){' +
+								'var __framelitLibsToLoad = ['+(_.reduce(jsIncludes, function (total, curr) {
+										return total + ' ' + SERVING_JS_PATH + curr + '?' + CURRENT_VERSION + ',\n';
+									}, '')).slice(0, -1)+']'+
+									'for(var i = 0; i < __framelitLibsToLoad.length; i++){' +
+										'var imported = document.createElement(\'script\');' +
+										'imported.src = __framelitLibsToLoad[i];' +
+										'document.head.appendChild(imported);'+
+									'}'+
+								'})(document)',
+				'file': MINIFIED_JS
 			},
 			'styleIncludes': {
 				'content': (_.reduce(styleIncludes, function (total, curr) {
-					return total + '<link rel="stylesheet" type="text/css" href="' + SERVING_CSS_PATH + curr + '?VERSION_SHOULD_GO_HERE">\n';
+					return total + '@import url(\''+SERVING_CSS_PATH + curr + '?' + CURRENT_VERSION + '\');\n';
 				}, '')),
-				'file': CSS_INCLUDES_FILE_PATH
+				'file': MINIFIED_CSS
 			}
 		});
 
@@ -165,18 +194,18 @@ module.exports = function(grunt) {
 	// Project configuration.
 	grunt.initConfig({
 		'concat': {
-			// For producing an unminified site.js file with all our js in it.
+			// For producing an unminified site js file with all our js in it.
 			// For a minified+concatenated file, see closureCompiler:site below
 			'site': {
-				'src': prefixPaths(JS_PATH, siteJSAssets),
-				'dest': JS_MIN_PATH + 'site/site.min.js',
+				'src': prefixPaths(JS_PATH, JS_SITE),
+				'dest': MINIFIED_JS,
 				'separator': ';'
 			},
 			// Concatenates all our libs together - no minification needed
 			// since they're all minified already
 			'libs': {
-				'src': prefixPaths(JS_PATH, libs),
-				'dest': JS_MIN_PATH + 'external/libs.min.js',
+				'src': prefixPaths(JS_PATH, JS_EXTERNAL),
+				'dest': JS_MIN_PATH + 'external/external.min.js',
 				'separator': ';'
 			},
 			'standaloneJSDevelopment': {
@@ -187,8 +216,8 @@ module.exports = function(grunt) {
 			// Minify AND concatenate all our js into one site.js file
 			'site': {
 				'files': [{
-					'src': prefixPaths(JS_PATH, siteJSAssets),
-					'dest': JS_MIN_PATH + 'site/site.min.js'
+					'src': prefixPaths(JS_PATH, JS_SITE),
+					'dest': MINIFIED_JS
 				}]
 			},
 			'standalone': {
@@ -203,11 +232,11 @@ module.exports = function(grunt) {
 			}
 		},
 		'less': {
-			// Minify our less files into udacity.css
+			// Minify our less/css files into site css.
 			'production': {
 				'files': [{
-					'src': prefixPaths(CSS_PATH, stylesheets),
-					'dest': CSS_MIN_PATH + 'site/site.min.css'
+					'src': prefixPaths(CSS_PATH, CSS_SITE),
+					'dest': MINIFIED_CSS
 				}],
 				'options': {
 					'cleancss': true
@@ -215,9 +244,9 @@ module.exports = function(grunt) {
 			},
 			// Compile all the LESS in our css/ directory
 			'development': {
-				// All of our core files in css/udacity/
+				// All of our core files
 				'files': [{
-					'src': stylesheets,
+					'src': CSS_SITE,
 					'dest': CSS_MIN_PATH,
 					'cwd': CSS_PATH,
 					'expand': true,
@@ -248,12 +277,12 @@ module.exports = function(grunt) {
 			// Copies all of our js assets over, without catting or minifying
 			'js': {
 				'files': [{
-					'src': libs.concat(jsLibSourceMaps),
+					'src': JS_EXTERNAL.concat(JS_EXTERNAL_SOURCE_MAPS),
 					'dest': JS_MIN_PATH,
 					'cwd': JS_PATH,
 					'expand': true
 				}, {
-					'src': siteJSAssets,
+					'src': JS_SITE,
 					'dest': path.join(JS_MIN_PATH, 'site/'),
 					'cwd': JS_PATH,
 					'expand': true
@@ -261,17 +290,17 @@ module.exports = function(grunt) {
 			},
 			'standaloneJSLibs': {
 				'files': [{
-					'src': ['**'],
-					'dest': path.join(JS_MIN_PATH, 'standalone/libs/'),
-					'cwd': path.join(JS_PATH, 'standalone/libs/'),
+					'src': JS_STANDALONE_LIBS,
+					'dest': JS_MIN_PATH,
+					'cwd': JS_PATH,
 					'expand': true
 				}]
 			},
 			'standaloneCSSLibs': {
 				'files': [{
-					'src': ['**'],
-					'dest': path.join(CSS_MIN_PATH, 'standalone/libs/'),
-					'cwd': path.join(CSS_PATH, 'standalone/libs/'),
+					'src': CSS_STANDALONE_LIBS,
+					'dest': CSS_MIN_PATH,
+					'cwd': CSS_PATH,
 					'expand': true
 				}]
 			}
@@ -280,181 +309,12 @@ module.exports = function(grunt) {
 			'all': {
 				'src': [
 					JS_MIN_PATH,
-					CSS_MIN_PATH,
-					JS_INCLUDES_FILE_PATH,
-					CSS_INCLUDES_FILE_PATH
+					CSS_MIN_PATH
 				]
 			},
-			'standalone': {
-				'src': [
-					JS_MIN_PATH + 'standalone/',
-					CSS_MIN_PATH + 'standalone/'
-				]
-			},
-		},
-
-		// Not used in the main build tasks
-		//
-		// Watch the source js and LESS files for changes. In order to use livereload
-		// to automatically reload the post-build outputted files as well,
-		// please use the livereload.js gruntfile and run it with `npm run livereload`.
-		'watch': {
-			'jsSource': {
-				files: [JS_PATH + '**/*.js'],
-				options: {
-					spawn: false
-				}
-			},
-			'lessSource': {
-				files: [
-					CSS_PATH + '**/*.less'
-				],
-				options: {
-					spawn: false
-				}
-			}
 		}
 	});
 
-	// Watch for all files changed in a 200ms timespan,
-	// then run the necessary tasks to reprocess them
-	var changedFiles = [];
-	var doneHandler = null;
-	var onChange = function () {
-		// Helper functions
-		var getChangedFileMaps = function (changedFilePaths, standaloneMinifyMaps,
-					changedCoreFileProcessor) {
-			var getChangedStandaloneFileMaps = function (changedFilePaths) {
-				// Collect all standalone directories where something was changed
-				return _.filter(standaloneMinifyMaps, function (standaloneFilesMapping) {
-					// Go through each source file in the current standalone subdirectory
-					return _.any(standaloneFilesMapping.src, function (standaloneFile) {
-						// Return if the standaloneFile is one of the files that has changed
-						// and needs to be rebuilt
-						return _.any(changedFilePaths, function (changedFile) {
-							return standaloneFile === changedFile;
-						});
-					});
-				});
-			};
-
-			// changedCoreFileProcessor should be a function which, when given a list of changed
-			// core files, returns a list of valid grunt file objects to use for processing
-			var getChangedCoreFileMaps = function (changedFilePaths, changedCoreFileProcessor) {
-				return changedCoreFileProcessor(_.reject(changedFilePaths, function (filePath) {
-					return (/static\/[^\/]+\/standalone/).test(filePath);
-				}));
-			};
-
-			return {
-				standalone: getChangedStandaloneFileMaps(changedFilePaths, standaloneMinifyMaps),
-				core: getChangedCoreFileMaps(changedFilePaths, changedCoreFileProcessor)
-			};
-		};
-
-		// Only run if at least one file needs to be recompiled
-		if (!changedFiles.length) {
-			grunt.log.writeln('Skipping onChange handler due to no changed files');
-		} else {
-			grunt.log.subhead('recompiling. changed files: ');
-			grunt.log.subhead(changedFiles);
-
-			// If any LESS files were changed
-			var changedLessFiles = _.filter(changedFiles, function (filePath) {
-				return filePath.indexOf('.less') !== -1;
-			});
-
-			var changedJsFiles = _.filter(changedFiles, function (filePath) {
-				return filePath.indexOf('.js') !== -1;
-			});
-
-			var changedLessFileMaps = getChangedFileMaps(changedLessFiles, standaloneCSSMinifyFilesMap,
-					function (coreLessFilePaths) {
-				return _.map(coreLessFilePaths, function (filePath) {
-					return {
-						'src': path.relative(CSS_PATH, filePath),
-						'dest': CSS_MIN_PATH,
-						'cwd': CSS_PATH,
-						'expand': true,
-						'ext': '.css'
-					};
-				});
-			});
-			var changedJsFileMaps = getChangedFileMaps(changedJsFiles, standaloneJSMinifyFilesMap,
-					function (coreJsFilePaths) {
-				return [{
-					// Filter down to only the non-standalone js files
-					'src': _.map(coreJsFilePaths, function (filePath) {
-						return path.relative(JS_PATH, filePath);
-					}),
-					'dest': path.join(JS_MIN_PATH, 'udacity/'),
-					'cwd': JS_PATH,
-					'expand': true
-				}];
-			});
-
-			console.log('changedJsFileMaps:');
-			console.log(JSON.stringify(changedJsFileMaps, 2));
-			console.log('changedLessFileMaps');
-			console.log(JSON.stringify(changedLessFileMaps, 2));
-
-			// Set (or clear) the files to be recompiled
-			grunt.config.set('less.processChangedStyles', {
-				'files': changedLessFileMaps.core.concat(changedLessFileMaps.standalone),
-				'options': {
-					'sourceMap': true,
-					'outputSourceFiles': true
-				}
-			});
-			grunt.config.set('copy.processChangedCoreJs', {
-				'files': changedJsFileMaps.core
-			});
-			grunt.config.set('concat.processChangedStandaloneJs', {
-				'files': changedJsFileMaps.standalone
-			});
-
-			// If there were changed files in /css/components,
-			// they were likely imported somewhere but we can't tell where!
-			// Thus, fall back to recompiling all the styles instead of
-			// running the changed styles task.
-			var lessProcessingTask = 'less:processChangedStyles';
-			if (_.any(changedLessFiles, function (filePath) {
-				return filePath.indexOf('css/components/') !== -1;
-			})) {
-				lessProcessingTask = 'styles';
-			}
-
-			// Push it!
-			grunt.task.run(lessProcessingTask,
-			'copy:processChangedCoreJs', 'concat:processChangedStandaloneJs');
-		}
-
-		// Clear state
-		changedFiles = [];
-		// Grab a reference to the done handler, clear the global version,
-		// then signal this async task is done!
-		var done = doneHandler;
-		doneHandler = null;
-		done();
-	};
-	var debouncedOnChange = _.debounce(onChange, fileWatcherBatchTimespan);
-	grunt.registerTask('handleWatchEvent', function () {
-			if (!doneHandler) {
-				doneHandler = this.async();
-			}
-			debouncedOnChange();
-	});
-	grunt.event.on('watch', function (action, filepath) {
-		if (filepath.indexOf('static/minified/') === -1) {
-			// Track the changed files
-			changedFiles.push(filepath);
-			// If there's no done handler set up yet, register as async
-			// and bind the handler so it can be called when the debounced
-			// onChange actually runs. This ensures grunt actually runs
-			// the tasks at the end of onChange.
-			grunt.task.run('handleWatchEvent');
-		}
-	});
 
 	// ==================
 	// = Internal Tasks =
@@ -504,7 +364,7 @@ module.exports = function(grunt) {
 	// = Specialized Public Build Tasks for Speeding up Live-Reload Time =
 	// ===================================================================
 
-	// Copies over the JS (except homepage js) without minifying it -- great for use with livereload
+	// Copies over the JS without minifying it -- great for use with livereload
 	grunt.registerTask('js', 'Copies over the just JS, without minifying/catting it.', [
 		'copy:js',
 		'concat:standaloneJSDevelopment',
@@ -512,17 +372,12 @@ module.exports = function(grunt) {
 		'createIncludeFiles'
 	]);
 
-	// Just compiles the styles over again except for homepage styles -- great for use with LiveReload
+	// Just compiles the styles over again -- great for use with LiveReload
 	grunt.registerTask('styles', 'compiles the LESS and dependency assets', [
 		'less:development',
 		'copy:standaloneCSSLibs'
 	]);
 
-	grunt.registerTask('dev_standalone', 'compiles LESS and JS in /css/standalone and /js/standalone only.' +
-		'Does not clean or update the rest of the minified site assets.', [
-			'clean:standalone',
-			'standalone'
-	]);
 
 	grunt.registerTask('dev_standalone_styles', 'recompiles LESS and updates minified css files ' +
 		'for standalone. Does not clean anything -- this is unsafe to use when files ' +
