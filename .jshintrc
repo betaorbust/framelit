@@ -1,0 +1,61 @@
+{
+	"maxerr"        : 200,       // {int} Maximum error before stopping
+
+	// Enforcing
+	"camelcase"     : true,     // true: Identifiers must be in camelCase
+	"indent"        : 4,        // {int} Number of spaces to use for indentation
+	"quotmark"      : true,     // Quotation mark consistency:
+								//   false    : do nothing (default)
+								//   true     : ensure whatever is used is consistent
+								//   "single" : require single quotes
+								//   "double" : require double quotes
+	// Relaxing
+	"sub"           : false,     // true: Tolerate using `[]` notation when it can still be expressed in dot notation
+
+	// Custom Globals
+	"predef": [ 				// additional predefined global variables
+		"_",		 	// Underscore.js global object
+		"angular", 	// angular js
+		"jquery",		// jquery global
+		"console",		// because console isn"t in debug?
+		"_gaq",		// Google Analytics global
+		"YT",			// YouTube player
+		"_gaq",		// Google Analyitics
+
+		// All the jasmine globals
+		"jasmine",
+		"spyOn",
+		"it",
+		"console",
+		"describe",
+		"expect",
+		"beforeEach",
+		"afterEach",
+		"waits",
+		"waitsFor",
+		"runs",
+
+		// AngularJS Jasmine Adapter Globals
+		"inject",
+		"module",
+		"xit",
+		"xdescribe",
+		"iit",
+		"ddescribe",
+
+		// Protractor Jasmine Adapter Globals and Node Globals
+		"by",
+		"element",
+		"browser",
+		"require",
+
+		// Additional testing libraries and our own global functions
+		"sinon",
+		"mock",
+		"autoStub",
+		"autoSpy",
+		"resolved",
+		"rejected",
+		"isPromise"
+	]
+}
