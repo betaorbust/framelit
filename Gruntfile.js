@@ -79,10 +79,10 @@ module.exports = function(grunt) {
 	var STATIC_BASE_PATH = 'static/',
 		MINIFIED_BASE_PATH = STATIC_BASE_PATH + 'minified/',
 		MINIFIED_INCLUDE_NAME = 'framelit',
-		JS_PATH = STATIC_BASE_PATH + '/js/',
+		JS_PATH = STATIC_BASE_PATH + 'js/',
 		JS_MIN_PATH = MINIFIED_BASE_PATH + 'js_min/',
 		MINIFIED_JS = JS_MIN_PATH + MINIFIED_INCLUDE_NAME + '.min.js',
-		SERVING_JS_PATH = JS_MIN_PATH, // IF you have a different serving path, change this.
+		SERVING_JS_PATH = '/' + JS_MIN_PATH, // IF you have a different serving path, change this.
 		CSS_PATH = STATIC_BASE_PATH + 'css/',
 		CSS_MIN_PATH = MINIFIED_BASE_PATH + 'css_min/',
 		SERVING_CSS_PATH = CSS_MIN_PATH, // IF you have a different serving path, change this.
@@ -127,9 +127,10 @@ module.exports = function(grunt) {
 		});
 	}
 
+	// Get all from within
+
 	var standaloneJSMinifyFilesMap = makeMinificationMap(JS_PATH, JS_MIN_PATH, 'js', 'js');
 	var standaloneCSSMinifyFilesMap = makeMinificationMap(CSS_PATH, CSS_MIN_PATH, '(less|css)', 'css');
-
 	grunt.registerTask('createIncludeFiles', function () {
 		// Paths and ordering for the includes files
 		var jsIncludes = grunt.file.expand(
@@ -145,16 +146,17 @@ module.exports = function(grunt) {
 		// Injects every jsInclude manually.
 		grunt.config.set('createFile', {
 			'jsIncludes': {
-				'content': '(function(document, undefined){' +
-								'var __framelitLibsToLoad = ['+(_.reduce(jsIncludes, function (total, curr) {
-										return total + ' ' + SERVING_JS_PATH + curr + '?' + CURRENT_VERSION + ',\n';
-									}, '')).slice(0, -1)+']'+
-									'for(var i = 0; i < __framelitLibsToLoad.length; i++){' +
-										'var imported = document.createElement(\'script\');' +
-										'imported.src = __framelitLibsToLoad[i];' +
-										'document.head.appendChild(imported);'+
-									'}'+
-								'})(document)',
+				'content': '(function(document, undefined){\n' +
+								'	\'use strict\';\n' +
+								'	var __framelitLibsToLoad = ['+(_.reduce(jsIncludes, function (total, curr) {
+										return total + '\'' + SERVING_JS_PATH + curr + '?' + CURRENT_VERSION + '\',\n';
+									}, '')).slice(0, -2)+'];\n'+
+								'	for(var i = 0; i < __framelitLibsToLoad.length; i++){\n' +
+								'		var imported = document.createElement(\'script\');\n' +
+								'		imported.src = __framelitLibsToLoad[i];\n' +
+								'		document.head.appendChild(imported);\n'+
+								'	}\n'+
+								'})(document);',
 				'file': MINIFIED_JS
 			},
 			'styleIncludes': {
@@ -171,8 +173,7 @@ module.exports = function(grunt) {
 
 	// Custom Tasks
 	grunt.registerMultiTask('createFile', 'This task creates a file with the specified content.',
-			function () {
-
+		function () {
 		var content = this.data['content'] || '';
 		var file = this.data['file'];
 
@@ -283,7 +284,7 @@ module.exports = function(grunt) {
 					'expand': true
 				}, {
 					'src': JS_SITE,
-					'dest': path.join(JS_MIN_PATH, 'site/'),
+					'dest': path.join(JS_MIN_PATH),
 					'cwd': JS_PATH,
 					'expand': true
 				}]
@@ -354,35 +355,6 @@ module.exports = function(grunt) {
 		'copy:standaloneCSSLibs',
 		'less:development',
 		'createIncludeFiles'
-	]);
-
-	// Runs the dev build and then watches for changes and automatically rebuilds less/js
-	grunt.registerTask('devwatch', ['dev', 'watch']);
-
-
-	// ===================================================================
-	// = Specialized Public Build Tasks for Speeding up Live-Reload Time =
-	// ===================================================================
-
-	// Copies over the JS without minifying it -- great for use with livereload
-	grunt.registerTask('js', 'Copies over the just JS, without minifying/catting it.', [
-		'copy:js',
-		'concat:standaloneJSDevelopment',
-		'copy:standaloneJSLibs',
-		'createIncludeFiles'
-	]);
-
-	// Just compiles the styles over again -- great for use with LiveReload
-	grunt.registerTask('styles', 'compiles the LESS and dependency assets', [
-		'less:development',
-		'copy:standaloneCSSLibs'
-	]);
-
-
-	grunt.registerTask('dev_standalone_styles', 'recompiles LESS and updates minified css files ' +
-		'for standalone. Does not clean anything -- this is unsafe to use when files ' +
-		'are added/removed.', [
-			'less:standaloneCSSDevelopment'
 	]);
 
 };
