@@ -122,7 +122,7 @@ module.exports = function(grunt) {
 		]), function (dirPath) {
 			return {
 				'src': grunt.file.expand(path.join(baseInputPath, dirPath, '{,**/}*.' + inputFileExtension)),
-				'dest': path.join(baseOutputPath, dirPath, path.basename(dirPath) + '.min.' + outputFileExtension)
+				'dest': path.join(baseOutputPath, dirPath, '../', path.basename(dirPath) + '.min.' + outputFileExtension)
 			};
 		});
 	}
