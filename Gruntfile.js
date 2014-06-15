@@ -82,6 +82,7 @@ module.exports = function(grunt) {
 		JS_PATH = STATIC_BASE_PATH + 'js/',
 		JS_MIN_PATH = MINIFIED_BASE_PATH + 'js_min/',
 		MINIFIED_JS = JS_MIN_PATH + MINIFIED_INCLUDE_NAME + '.min.js',
+		MINIFIED_JS_EXTERNAL = JS_MIN_PATH + MINIFIED_INCLUDE_NAME + '_external.min.js',
 		SERVING_JS_PATH = '/' + JS_MIN_PATH, // IF you have a different serving path, change this.
 		CSS_PATH = STATIC_BASE_PATH + 'css/',
 		CSS_MIN_PATH = MINIFIED_BASE_PATH + 'css_min/',
@@ -206,7 +207,7 @@ module.exports = function(grunt) {
 			// since they're all minified already
 			'libs': {
 				'src': prefixPaths(JS_PATH, JS_EXTERNAL),
-				'dest': JS_MIN_PATH + 'external/external.min.js',
+				'dest': MINIFIED_JS_EXTERNAL,
 				'separator': ';'
 			},
 			'standaloneJSDevelopment': {
