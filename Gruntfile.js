@@ -16,13 +16,13 @@ module.exports = function(grunt) {
 	/**
 	 * General idea for full production build
 	 * js
-	 * 	-> external
-	 * 		Concatenated, but not minified to [JS_MIN_PATH]/external.min.js.
+	 * 	-> vendor
+	 * 		Concatenated, but not minified to [JS_MIN_PATH]/[MINIFIED_INCLUDE_NAME]_vendor.min.js.
 	 * 	-> site
 	 * 		Minified and concatenated into [MINIFIED_JS].
 	 * 	-> standalone
-	 * 		-> libs
-	 * 			Copied to [JS_MIN_PATH]/standalone/libs/[existing path]
+	 * 		-> vendor
+	 * 			Copied to [JS_MIN_PATH]/standalone/vendor/[existing path]
 	 * 		-> site
 	 * 			Minified by directory to [JS_MIN_PATH]/standalone/site/[libraryname].min.js
 	 * 			Example: standalone/site/mylib/[mylibmain.js, mylibsupport.js]
@@ -33,7 +33,7 @@ module.exports = function(grunt) {
 	 * 	-> components
 	 * 		Nothing happens. Not available after build. Use only to reference/include
 	 * 		from during builds. (stuff like bootstrap components can go here)
-	 * 	-> external
+	 * 	-> vendor
 	 * 		LESS'd and concatenated to the beginning of [MINIFIED_CSS]. If you don't want these files
 	 * 		in your main build, include them separately by using /standalone.
 	 * 		This is done alphabetically by default, but can be reordered from the "CSS_SITE"
@@ -42,23 +42,23 @@ module.exports = function(grunt) {
 	 * 		LESS'd and concatenated to the end of [MINIFIED_CSS]. This is done alphabetically by
 	 * 		default, but can be reordered from the "CSS_SITE" variable in this file.
 	 *  -> standalone
-	 *  	-> libs
-	 *  		Minified by directory to [CSS_MIN_PATH]/standalone/libs/[library name].min.css
+	 *  	-> vendor
+	 *  		Minified by directory to [CSS_MIN_PATH]/standalone/vendor/[library name].min.css
 	 *  	-> site
 	 *  		Minified by directory to [CSS_MIN_PATH]/standalone/site/[library name].min.css
 	 */
-	var JS_EXTERNAL = [
-			//'external/jquery/*min.js',
-			'external/{,**/}*.js'
+	var JS_VENDOR = [
+			//'vendor/jquery/*min.js',
+			'vendor/{,**/}*.js'
 		],
-		JS_EXTERNAL_SOURCE_MAPS = [
-			'external/{,**/}*.min.js.map'
+		JS_VENDOR_SOURCE_MAPS = [
+			'vendor/{,**/}*.min.js.map'
 		],
 		JS_SITE = [
 			'site/{,**/}*.js'
 		],
-		JS_STANDALONE_LIBS = [
-			'standalone/libs/{,**/}*.js'
+		JS_STANDALONE_VENDOR = [
+			'standalone/vendor/{,**/}*.js'
 		],
 		JS_STANDALONE_SITE = [
 			'standalone/site/{,**/}*.js'
@@ -66,12 +66,12 @@ module.exports = function(grunt) {
 		CSS_SITE = [
 			// When including a specific file here, make sure to include both the css and
 			// less file versions as this is used both pre and post less-ification.
-			//'external/bootstrap/bootstrap.(less|css)'
-			'external/{,**/}*.(less|css)',
+			//'vendor/bootstrap/bootstrap.(less|css)'
+			'vendor/{,**/}*.(less|css)',
 			'site/{,**/}*.(less|css)'
 		],
-		CSS_STANDALONE_LIBS = [
-			'standalone/libs/{,**/}*.(less|css)'
+		CSS_STANDALONE_VENDOR = [
+			'standalone/vendor/{,**/}*.(less|css)'
 		];
 
 
@@ -82,7 +82,7 @@ module.exports = function(grunt) {
 		JS_PATH = STATIC_BASE_PATH + 'js/',
 		JS_MIN_PATH = MINIFIED_BASE_PATH + 'js_min/',
 		MINIFIED_JS = JS_MIN_PATH + MINIFIED_INCLUDE_NAME + '.min.js',
-		MINIFIED_JS_EXTERNAL = JS_MIN_PATH + MINIFIED_INCLUDE_NAME + '_external.min.js',
+		MINIFIED_JS_VENDOR = JS_MIN_PATH + MINIFIED_INCLUDE_NAME + '_vendor.min.js',
 		SERVING_JS_PATH = '/' + JS_MIN_PATH, // IF you have a different serving path, change this.
 		CSS_PATH = STATIC_BASE_PATH + 'css/',
 		CSS_MIN_PATH = MINIFIED_BASE_PATH + 'css_min/',
@@ -136,7 +136,7 @@ module.exports = function(grunt) {
 		// Paths and ordering for the includes files
 		var jsIncludes = grunt.file.expand(
 				{'cwd': JS_MIN_PATH},
-				JS_EXTERNAL.concat(JS_SITE)
+				JS_VENDOR.concat(JS_SITE)
 			);
 
 		// If there are any css files that need to be loaded first,
@@ -203,11 +203,11 @@ module.exports = function(grunt) {
 				'dest': MINIFIED_JS,
 				'separator': ';'
 			},
-			// Concatenates all our libs together - no minification needed
+			// Concatenates all vendor libs together - no minification needed
 			// since they're all minified already
-			'libs': {
-				'src': prefixPaths(JS_PATH, JS_EXTERNAL),
-				'dest': MINIFIED_JS_EXTERNAL,
+			'vendor': {
+				'src': prefixPaths(JS_PATH, JS_VENDOR),
+				'dest': MINIFIED_JS_VENDOR,
 				'separator': ';'
 			},
 			'standaloneJSDevelopment': {
@@ -279,7 +279,7 @@ module.exports = function(grunt) {
 			// Copies all of our js assets over, without catting or minifying
 			'js': {
 				'files': [{
-					'src': JS_EXTERNAL.concat(JS_EXTERNAL_SOURCE_MAPS),
+					'src': JS_VENDOR.concat(JS_VENDOR_SOURCE_MAPS),
 					'dest': JS_MIN_PATH,
 					'cwd': JS_PATH,
 					'expand': true
@@ -290,17 +290,17 @@ module.exports = function(grunt) {
 					'expand': true
 				}]
 			},
-			'standaloneJSLibs': {
+			'standaloneJSVendor': {
 				'files': [{
-					'src': JS_STANDALONE_LIBS,
+					'src': JS_STANDALONE_VENDOR,
 					'dest': JS_MIN_PATH,
 					'cwd': JS_PATH,
 					'expand': true
 				}]
 			},
-			'standaloneCSSLibs': {
+			'standaloneCSSVendor': {
 				'files': [{
-					'src': CSS_STANDALONE_LIBS,
+					'src': CSS_STANDALONE_VENDOR,
 					'dest': CSS_MIN_PATH,
 					'cwd': CSS_PATH,
 					'expand': true
@@ -324,16 +324,16 @@ module.exports = function(grunt) {
 
 	// Minifies and concatenates our js files and produces a js includes template referencing the catted file
 	grunt.registerTask('processJS', 'Minifies and concatenates our js files and produces a js includes template referencing the catted file',
-			['concat:libs', 'closureCompiler:site', 'closureCompiler:standalone', 'copy:standaloneJSLibs']);
+			['concat:vendor', 'closureCompiler:site', 'closureCompiler:standalone', 'copy:standaloneJSVendor']);
 
 	// Compiles and creates the minified CSS files and their dependencies
 	grunt.registerTask('processStyles', 'Compiles and creates the minified CSS files and their dependencies',
-			['less:production', 'copy:standaloneCSSLibs', 'less:standaloneCSSProduction']);
+			['less:production', 'copy:standaloneCSSVendor', 'less:standaloneCSSProduction']);
 
 	// All JS/LESS and their libs in the standalone folders
 	grunt.registerTask('standalone', 'Builds all js/less assets in js/standalone and css/standalone',
-			['concat:standaloneJSDevelopment', 'copy:standaloneJSLibs',
-					'copy:standaloneCSSLibs', 'less:standaloneCSSDevelopment']);
+			['concat:standaloneJSDevelopment', 'copy:standaloneJSVendor',
+					'copy:standaloneCSSVendor', 'less:standaloneCSSDevelopment']);
 
 	// ================
 	// = Public Tasks =
@@ -344,7 +344,6 @@ module.exports = function(grunt) {
 		'clean:all',
 		'processJS',
 		'processStyles',
-		'createIncludeFiles'
 	]);
 
 	// Copies over the JS without minifying it, compiles the LESS and dependency assets
@@ -352,8 +351,8 @@ module.exports = function(grunt) {
 		'clean:all',
 		'copy:js',
 		'concat:standaloneJSDevelopment',
-		'copy:standaloneJSLibs',
-		'copy:standaloneCSSLibs',
+		'copy:standaloneJSVendor',
+		'copy:standaloneCSSVendor',
 		'less:development',
 		'createIncludeFiles'
 	]);
