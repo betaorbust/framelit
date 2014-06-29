@@ -174,22 +174,23 @@ module.exports = function(grunt) {
 	// Custom Tasks
 	grunt.registerMultiTask('createFile', 'This task creates a file with the specified content.',
 		function () {
-		var content = this.data['content'] || '';
-		var file = this.data['file'];
+			var content = this.data.content || '';
+			var file = this.data.file;
 
-		// Fail out if no file specified
-		if (!file) {
-			grunt.fail.warn('No file path specified.');
-		}
+			// Fail out if no file specified
+			if (!file) {
+				grunt.fail.warn('No file path specified.');
+			}
 
-		// Write the contents to the file
-		try {
-			grunt.file.write(file, content);
-			grunt.log.writeln('File ' + file.cyan + ' created');
-		} catch (e) {
-			grunt.fail.warn(e.message);
+			// Write the contents to the file
+			try {
+				grunt.file.write(file, content);
+				grunt.log.writeln('File ' + file.cyan + ' created');
+			} catch (e) {
+				grunt.fail.warn(e.message);
+			}
 		}
-	});
+	);
 
 
 	// Project configuration.

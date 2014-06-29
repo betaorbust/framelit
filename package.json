@@ -23,8 +23,6 @@
   "scripts": {
     "build": "node_modules/grunt-cli/bin/grunt",
     "dev": "node_modules/grunt-cli/bin/grunt dev",
-    "livereload": "node_modules/grunt-cli/bin/grunt --gruntfile livereload.js",
-    "watch": "node_modules/grunt-cli/bin/grunt devwatch",
     "cleaninstall": "rm -rf node_modules/; npm install --production;"
   },
   "engineStrict": true,
