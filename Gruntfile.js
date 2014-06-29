@@ -60,9 +60,7 @@ module.exports = function(grunt) {
 		JS_STANDALONE_VENDOR = [
 			'standalone/vendor/{,**/}*.js'
 		],
-		JS_STANDALONE_SITE = [
-			'standalone/site/{,**/}*.js'
-		],
+		JS_STANDALONE_SITE_PATH = 'standalone/site/',
 		CSS_SITE = [
 			// When including a specific file here, make sure to include both the css and
 			// less file versions as this is used both pre and post less-ification.
@@ -110,6 +108,9 @@ module.exports = function(grunt) {
 	// Processing of standalone files - autominify anything in a dir under
 	// <baseInputPath>/standalone/site/<some dir> with the given inputFileExtension to
 	// <baseOutputPath>/standalone/site/<dir name>/<dir name>.min.<outputFileExtension>
+	// TODO: This section is brittle, in that it does not allow ordering within site lib components,
+	// and does not follow the variable pattern we're generally using. Will take a hefty refactor,
+	// so leaving it out for now.
 	function makeMinificationMap(baseInputPath, baseOutputPath, inputFileExtension, outputFileExtension) {
 		return _.map(grunt.file.expand({
 			'cwd': baseInputPath,
@@ -118,9 +119,7 @@ module.exports = function(grunt) {
 				return grunt.file.isDir(fullDirPath) &&
 						grunt.file.expand(path.join(fullDirPath, '/{,**/}*.' + inputFileExtension)).length;
 			}
-		}, [
-			'standalone/site/*'
-		]), function (dirPath) {
+		}, [JS_STANDALONE_SITE_PATH + '*']), function (dirPath) {
 			return {
 				'src': grunt.file.expand(path.join(baseInputPath, dirPath, '{,**/}*.' + inputFileExtension)),
 				'dest': path.join(baseOutputPath, dirPath, '../', path.basename(dirPath) + '.min.' + outputFileExtension)
@@ -329,11 +328,6 @@ module.exports = function(grunt) {
 	// Compiles and creates the minified CSS files and their dependencies
 	grunt.registerTask('processStyles', 'Compiles and creates the minified CSS files and their dependencies',
 			['less:production', 'copy:standaloneCSSVendor', 'less:standaloneCSSProduction']);
-
-	// All JS/LESS and their libs in the standalone folders
-	grunt.registerTask('standalone', 'Builds all js/less assets in js/standalone and css/standalone',
-			['concat:standaloneJSDevelopment', 'copy:standaloneJSVendor',
-					'copy:standaloneCSSVendor', 'less:standaloneCSSDevelopment']);
 
 	// ================
 	// = Public Tasks =
