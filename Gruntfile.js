@@ -97,6 +97,7 @@ module.exports = function(grunt) {
 		CSS_MIN_PATH = MINIFIED_BASE_PATH + 'css_min/',
 		SERVING_CSS_PATH = CSS_MIN_PATH, // IF you have a different serving path, change this.
 		MINIFIED_CSS = CSS_MIN_PATH + MINIFIED_INCLUDE_NAME + '.min.css',
+		MINIFIED_CSS_VENDOR = CSS_MIN_PATH + MINIFIED_INCLUDE_NAME +'_vendor.min.css',
 		CURRENT_VERSION = (new Date()).getTime();
 
 
@@ -212,6 +213,7 @@ module.exports = function(grunt) {
 				'dest': MINIFIED_JS,
 				'separator': ';'
 			},
+
 			// Concatenates all vendor libs together - no minification needed
 			// since they're all minified already
 			'vendorJS': {
@@ -219,6 +221,20 @@ module.exports = function(grunt) {
 				'dest': MINIFIED_JS_VENDOR,
 				'separator': ';'
 			},
+
+
+			// Copies over all js site files to make an unminified version of the compiled site.
+			'standaloneJSDevelopment': {
+				'files': standaloneJSMinifyFilesMap
+			},
+
+			// Puts all vendor css libs into one file.
+			'vendorCSS': {
+				'src': prefixPaths(CSS_PATH, CSS_VENDOR),
+				'dest': MINIFIED_CSS_VENDOR,
+				'separator': ';'
+			},
+
 			// Composes existing minified site js and vendor js into a production file.
 			// Can only be run after MINIFIED_JS and MINIFIED_JS_VENDOR exist.
 			'productionJS': {
@@ -226,14 +242,14 @@ module.exports = function(grunt) {
 				'dest': MINIFIED_JS,
 				'separator': ';'
 			},
-			'standaloneJSDevelopment': {
-				'files': standaloneJSMinifyFilesMap
-			},
-			'vendorCSS': {
-				'src': prefixPaths(CSS_PATH, CSS_VENDOR),
+
+			// Composes existing minified site css and vendor css into a production file.
+			// Can only be run after MINIFIED_CSS and MINIFIED_CSS_VENDOR exist.
+			'productionCSS': {
+				'src': [MINIFIED_CSS_VENDOR, MINIFIED_CSS],
 				'dest': MINIFIED_CSS,
 				'separator': ';'
-			}
+			},
 		},
 		'closureCompiler': {
 			// Minify AND concatenate all our js into one site.js file
@@ -358,6 +374,7 @@ module.exports = function(grunt) {
 		[
 			'concat:vendorCSS',
 			'less:production',
+			'concat:productionCSS',
 			'copy:standaloneCSSVendor',
 			'less:standaloneCSSProduction'
 		]);
