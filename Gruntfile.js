@@ -70,14 +70,14 @@ module.exports = function(grunt) {
 	var CSS_VENDOR = [
 			'vendor/{,**/}*.css',
 		],
+		// When including a specific file here, make sure to include both the css and
+		// less file versions as this is used both pre and post less-ification.
+		//'vendor/bootstrap/bootstrap.(less|css)'
 		CSS_SITE = [
-			// When including a specific file here, make sure to include both the css and
-			// less file versions as this is used both pre and post less-ification.
-			//'vendor/bootstrap/bootstrap.(less|css)'
-			'site/{,**/}*.(less|css)'
+			'site/{,**/}*.less'
 		],
-		CSS_STANDALONE_SITE = [
-			'standalone/site/{,**/}*.(less|css)'
+		CSS_STANDALONE_SITE_PATH = [
+			'standalone/site/{,**/}*.less'
 		],
 		CSS_STANDALONE_VENDOR = [
 			'standalone/vendor/{,**/}*.css'
@@ -124,32 +124,42 @@ module.exports = function(grunt) {
 	// and does not follow the variable pattern we're generally using. Will take a hefty refactor,
 	// so leaving it out for now.
 	function makeMinificationMap(baseInputPath, baseOutputPath, inputFileExtension, outputFileExtension) {
-		return _.map(grunt.file.expand({
-			'cwd': baseInputPath,
-			'filter': function isNonEmptyDir(fullDirPath) {
-				// TODO: convert to using isMatch
-				return grunt.file.isDir(fullDirPath) &&
-						grunt.file.expand(path.join(fullDirPath, '/{,**/}*.' + inputFileExtension)).length;
+		return _.map(
+			grunt.file.expand(
+				{
+					'cwd': baseInputPath,
+					'filter': function isNonEmptyDir(fullDirPath) {
+						// TODO: convert to using isMatch
+						return grunt.file.isDir(fullDirPath) &&
+								grunt.file.expand(path.join(fullDirPath, '/{,**/}*.' + inputFileExtension)).length;
+					}
+				},
+				[
+					JS_STANDALONE_SITE_PATH + '*',
+					CSS_STANDALONE_SITE_PATH + '*'
+				]
+			),
+			function (dirPath) {
+				return {
+					'src': grunt.file.expand(path.join(baseInputPath, dirPath, '{,**/}*.' + inputFileExtension)),
+					'dest': path.join(baseOutputPath, dirPath, '../', path.basename(dirPath) + '.min.' + outputFileExtension)
+				};
 			}
-		}, [JS_STANDALONE_SITE_PATH + '*']), function (dirPath) {
-			return {
-				'src': grunt.file.expand(path.join(baseInputPath, dirPath, '{,**/}*.' + inputFileExtension)),
-				'dest': path.join(baseOutputPath, dirPath, '../', path.basename(dirPath) + '.min.' + outputFileExtension)
-			};
-		});
+		);
 	}
 
 	// Get all from within
 
 	var standaloneJSMinifyFilesMap = makeMinificationMap(JS_PATH, JS_MIN_PATH, 'js', 'js');
-	var standaloneCSSMinifyFilesMap = makeMinificationMap(CSS_PATH, CSS_MIN_PATH, '(less|css)', 'css');
+	var standaloneCSSMinifyFilesMap = makeMinificationMap(CSS_PATH, CSS_MIN_PATH, 'less', 'css');
+	//console.log(standaloneJSMinifyFilesMap);
+	console.log(standaloneCSSMinifyFilesMap);
 	grunt.registerTask('createIncludeFiles', function () {
 		// Paths and ordering for the includes files
 		var jsIncludes = grunt.file.expand(
 				{'cwd': JS_MIN_PATH},
 				JS_VENDOR.concat(JS_SITE)
 			);
-
 		var styleIncludes = grunt.file.expand({
 			'cwd': CSS_MIN_PATH
 		}, CSS_VENDOR.concat(CSS_SITE));
@@ -201,7 +211,6 @@ module.exports = function(grunt) {
 			}
 		}
 	);
-
 
 	// Project configuration.
 	grunt.initConfig({
@@ -274,7 +283,8 @@ module.exports = function(grunt) {
 			// Minify our less/css files into site css.
 			'production': {
 				'files': [{
-					'src': prefixPaths(CSS_PATH, CSS_SITE),
+					//'src': ['static/css/site/*.(less|css)'],
+					'src': grunt.file.expand(prefixPaths(CSS_PATH, CSS_SITE)),
 					'dest': MINIFIED_CSS
 				}],
 				'options': {
@@ -366,17 +376,17 @@ module.exports = function(grunt) {
 			'closureCompiler:site',       // Minify and cat the JS site files
 			'concat:productionJS',        // Add vendor libs to JS site files for production
 			'closureCompiler:standalone', // Minify the standalone JS site libs
-			'copy:standaloneJSVendor'     // Copy over the js standalone packages
+			'copy:standaloneJSVendor'     // Copy over the JS standalone packages
 		]);
 
 	// Compiles and creates the minified CSS files and their dependencies
 	grunt.registerTask('processStyles', 'Compiles and creates the minified CSS files and their dependencies',
 		[
-			'concat:vendorCSS',
-			'less:production',
-			'concat:productionCSS',
-			'copy:standaloneCSSVendor',
-			'less:standaloneCSSProduction'
+			'concat:vendorCSS',             // Push all vendor CSS libs together
+			'less:production',              // Minify and cat all CSS/LESS site files together
+			'concat:productionCSS',         // Add vendor libs to the CSS files for production
+			'less:standaloneCSSProduction', // Minify the standalone LESS site libs
+			// 'copy:standaloneCSSVendor'      // Copy over the CSS standalone packages
 		]);
 
 	// ================
@@ -386,7 +396,7 @@ module.exports = function(grunt) {
 	// Compiles+mins+cats all JS and LESS and their dependency assets
 	grunt.registerTask('default', 'Compiles+mins+cats all JS and LESS and their dependency assets', [
 		'clean:all',
-		'processJS',
+		//'processJS',
 		'processStyles',
 	]);
 
