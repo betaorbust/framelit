@@ -1,2 +1,7 @@
-/* Example standalone vendor css file */
-background-color: #FF00FF;
+/*
+	standalone/vendor/example.css
+	Example standalone vendor css file
+*/
+.framelit-example{
+	background-color: #FF00FF;
+}

@@ -1,2 +1,7 @@
-/* Example vendor css file. */
-background-color: #FFFF00;
+/*
+	vendor/example.css
+	Example vendor css file.
+*/
+.framelit-example{
+	background-color: #FFFF00;
+}
