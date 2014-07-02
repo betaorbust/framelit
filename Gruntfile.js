@@ -361,6 +361,12 @@ module.exports = function(grunt) {
 					CSS_MIN_PATH
 				]
 			},
+			'productionJS': {
+				'src': [MINIFIED_JS_VENDOR]
+			},
+			'productionCSS': {
+				'src': [MINIFIED_CSS_VENDOR]
+			}
 		}
 	});
 
@@ -375,6 +381,7 @@ module.exports = function(grunt) {
 			'concat:vendorJS',            // Push all the vendor JS libs together
 			'closureCompiler:site',       // Minify and cat the JS site files
 			'concat:productionJS',        // Add vendor libs to JS site files for production
+			'clean:productionJS',         // Clean up the temporary production vendor file.
 			'closureCompiler:standalone', // Minify the standalone JS site libs
 			'copy:standaloneJSVendor'     // Copy over the JS standalone packages
 		]);
@@ -385,6 +392,7 @@ module.exports = function(grunt) {
 			'concat:vendorCSS',             // Push all vendor CSS libs together
 			'less:production',              // Minify and cat all CSS/LESS site files together
 			'concat:productionCSS',         // Add vendor libs to the CSS files for production
+			'clean:productionCSS',         // Clean up the temporary production vendor file.
 			'less:standaloneCSSProduction', // Minify the standalone LESS site libs
 			// 'copy:standaloneCSSVendor'      // Copy over the CSS standalone packages
 		]);
