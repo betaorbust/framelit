@@ -85,7 +85,7 @@ module.exports = function(grunt) {
 
 
 	// Base File Paths - always include the trailing slash
-	var STATIC_BASE_PATH = 'static/',
+	var STATIC_BASE_PATH = 'src/static/',
 		MINIFIED_BASE_PATH = STATIC_BASE_PATH + 'minified/',
 		MINIFIED_INCLUDE_NAME = 'framelit',
 		JS_PATH = STATIC_BASE_PATH + 'js/',
