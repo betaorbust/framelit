@@ -307,14 +307,6 @@ module.exports = function(grunt) {
 					'outputSourceFiles': true
 				}
 			},
-			// Compile just the LESS in css/standalone/
-			'standaloneCSSDevelopment': {
-				'files': standaloneCSSMinifyFilesMap,
-				'options': {
-					'sourceMap': true,
-					'outputSourceFiles': true
-				}
-			},
 			'standaloneCSSProduction': {
 				'files': standaloneCSSMinifyFilesMap,
 				'options': {
