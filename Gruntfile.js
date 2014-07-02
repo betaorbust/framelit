@@ -148,21 +148,28 @@ module.exports = function(grunt) {
 		);
 	}
 
-	// Get all from within
-
+	// Get all files from within the standalone directories.
 	var standaloneJSMinifyFilesMap = makeMinificationMap(JS_PATH, JS_MIN_PATH, 'js', 'js');
 	var standaloneCSSMinifyFilesMap = makeMinificationMap(CSS_PATH, CSS_MIN_PATH, 'less', 'css');
-	//console.log(standaloneJSMinifyFilesMap);
-	console.log(standaloneCSSMinifyFilesMap);
+
 	grunt.registerTask('createIncludeFiles', function () {
 		// Paths and ordering for the includes files
 		var jsIncludes = grunt.file.expand(
 				{'cwd': JS_MIN_PATH},
 				JS_VENDOR.concat(JS_SITE)
 			);
+
+		// Make transform .less definitions to .css definitions as this step is taken after
+		// the lessification.
+		var cssDfns = _.map(CSS_VENDOR.concat(CSS_SITE), function(item){
+			return item.replace(/\.less$/, '.css');
+		});
+
+		// Make full style include list.
 		var styleIncludes = grunt.file.expand({
 			'cwd': CSS_MIN_PATH
-		}, CSS_VENDOR.concat(CSS_SITE));
+		}, cssDfns);
+
 		// Injects every jsInclude manually.
 		grunt.config.set('createFile', {
 			'jsIncludes': {
@@ -231,12 +238,6 @@ module.exports = function(grunt) {
 				'separator': ';'
 			},
 
-
-			// Copies over all js site files to make an unminified version of the compiled site.
-			'standaloneJSDevelopment': {
-				'files': standaloneJSMinifyFilesMap
-			},
-
 			// Puts all vendor css libs into one file.
 			'vendorCSS': {
 				'src': prefixPaths(CSS_PATH, CSS_VENDOR),
@@ -283,7 +284,6 @@ module.exports = function(grunt) {
 			// Minify our less/css files into site css.
 			'production': {
 				'files': [{
-					//'src': ['static/css/site/*.(less|css)'],
 					'src': grunt.file.expand(prefixPaths(CSS_PATH, CSS_SITE)),
 					'dest': MINIFIED_CSS
 				}],
@@ -295,7 +295,7 @@ module.exports = function(grunt) {
 			'development': {
 				// All of our core files
 				'files': [{
-					'src': CSS_SITE,
+					'src': CSS_VENDOR.concat(CSS_SITE),
 					'dest': CSS_MIN_PATH,
 					'cwd': CSS_PATH,
 					'expand': true,
@@ -392,7 +392,7 @@ module.exports = function(grunt) {
 			'concat:vendorCSS',             // Push all vendor CSS libs together
 			'less:production',              // Minify and cat all CSS/LESS site files together
 			'concat:productionCSS',         // Add vendor libs to the CSS files for production
-			'clean:productionCSS',         // Clean up the temporary production vendor file.
+			'clean:productionCSS',          // Clean up the temporary production vendor file.
 			'less:standaloneCSSProduction', // Minify the standalone LESS site libs
 			'copy:standaloneCSSVendor'      // Copy over the CSS standalone packages
 		]);
@@ -412,7 +412,6 @@ module.exports = function(grunt) {
 	grunt.registerTask('dev', 'Copies over the JS without minifying/catting it, compiles the LESS and dependency assets', [
 		'clean:all',
 		'copy:js',
-		'concat:standaloneJSDevelopment',
 		'copy:standaloneJSVendor',
 		'copy:standaloneCSSVendor',
 		'less:development',
