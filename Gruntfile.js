@@ -394,7 +394,7 @@ module.exports = function(grunt) {
 			'concat:productionCSS',         // Add vendor libs to the CSS files for production
 			'clean:productionCSS',         // Clean up the temporary production vendor file.
 			'less:standaloneCSSProduction', // Minify the standalone LESS site libs
-			// 'copy:standaloneCSSVendor'      // Copy over the CSS standalone packages
+			'copy:standaloneCSSVendor'      // Copy over the CSS standalone packages
 		]);
 
 	// ================
@@ -404,7 +404,7 @@ module.exports = function(grunt) {
 	// Compiles+mins+cats all JS and LESS and their dependency assets
 	grunt.registerTask('default', 'Compiles+mins+cats all JS and LESS and their dependency assets', [
 		'clean:all',
-		//'processJS',
+		'processJS',
 		'processStyles',
 	]);
 
