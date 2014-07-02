@@ -12,9 +12,14 @@ fi
 
 echo "Copying precommit hook..."
 
-hookdest="$(git rev-parse --show-toplevel)/.git/hooks/pre-commit"
+hookname="pre-commit"
+echo $hookname
+hookdest="$(git rev-parse --show-toplevel)/.git/hooks/"
+hooksrc="$(git rev-parse --show-toplevel)/util/pre-commit-jslint-hook/pre-commit"
 
-if [[ -f $hookdest ]]; then
+echo $hookdest
+
+if [[ -f $hookdest$hookname ]]; then
 	echo "There is already a pre-commit hook, overwrite?"
 	select choice in "Yes" "No"; do
 	    case $choice in
@@ -22,7 +27,9 @@ if [[ -f $hookdest ]]; then
 	        No ) echo "Please merge over manually then."; exit;;
 	    esac
 	done
+elif ! [[ -d $hookdest ]]; then
+	mkdir -p "$hookdest"
 fi
 
-cp "./pre-commit" "$hookdest"
+cp "$hooksrc" "$hookdest$hookname"
 echo "Copied precommit hook to $hookdest"
