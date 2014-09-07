@@ -92,10 +92,10 @@ module.exports = function(grunt) {
 		JS_MIN_PATH = MINIFIED_BASE_PATH + 'js_min/',
 		MINIFIED_JS = JS_MIN_PATH + MINIFIED_INCLUDE_NAME + '.min.js',
 		MINIFIED_JS_VENDOR = JS_MIN_PATH + MINIFIED_INCLUDE_NAME + '_vendor.min.js',
-		SERVING_JS_PATH = '/' + JS_MIN_PATH, // IF you have a different serving path, change this.
+		SERVING_JS_PATH = '/media/js/', // IF you have a different serving path, change this.
 		CSS_PATH = STATIC_BASE_PATH + 'css/',
 		CSS_MIN_PATH = MINIFIED_BASE_PATH + 'css_min/',
-		SERVING_CSS_PATH = CSS_MIN_PATH, // IF you have a different serving path, change this.
+		SERVING_CSS_PATH = '/media/css/', // IF you have a different serving path, change this.
 		MINIFIED_CSS = CSS_MIN_PATH + MINIFIED_INCLUDE_NAME + '.min.css',
 		MINIFIED_CSS_VENDOR = CSS_MIN_PATH + MINIFIED_INCLUDE_NAME +'_vendor.min.css',
 		CURRENT_VERSION = (new Date()).getTime();
@@ -179,9 +179,7 @@ module.exports = function(grunt) {
 										return total + '\'' + SERVING_JS_PATH + curr + '?' + CURRENT_VERSION + '\',\n';
 									}, '')).slice(0, -2)+'];\n'+
 								'	for(var i = 0; i < __framelitLibsToLoad.length; i++){\n' +
-								'		var imported = document.createElement(\'script\');\n' +
-								'		imported.src = __framelitLibsToLoad[i];\n' +
-								'		document.head.appendChild(imported);\n'+
+								'		 document.write(\'\x3Cscript src ="\'+__framelitLibsToLoad[i]+\'">\x3C/script>\');\n'+
 								'	}\n'+
 								'})(document);',
 				'file': MINIFIED_JS
