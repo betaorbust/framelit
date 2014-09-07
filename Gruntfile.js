@@ -179,9 +179,7 @@ module.exports = function(grunt) {
 										return total + '\'' + SERVING_JS_PATH + curr + '?' + CURRENT_VERSION + '\',\n';
 									}, '')).slice(0, -2)+'];\n'+
 								'	for(var i = 0; i < __framelitLibsToLoad.length; i++){\n' +
-								'		var imported = document.createElement(\'script\');\n' +
-								'		imported.src = __framelitLibsToLoad[i];\n' +
-								'		document.head.appendChild(imported);\n'+
+								'		 document.write(\'\x3Cscript src ="\'+__framelitLibsToLoad[i]+\'">\x3C/script>\');\n'+
 								'	}\n'+
 								'})(document);',
 				'file': MINIFIED_JS
