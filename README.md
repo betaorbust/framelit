@@ -20,6 +20,8 @@ pages: just `framelet.css` and `framelet.js`!
 * __A dev build target__ that's super fast, keeps everything unminified, in its own files for
 debugging, and *still* uses just `framelit.css` and `framelit.js`. No more dev specific including
 for you!
+* __A lightweight server__ using Express. Don't want it? Toss it out! This is just to get you 
+started if Node/Express is your thing.
 
 Just clone and go!
 
@@ -40,18 +42,22 @@ so we've gotta get our JAR on.
 
 ### Your first build ###
 1. Type `grunt` and hit enter.
-2. Go check out the `./src/static/minified/`!  
+2. Go check out the `./src/static/minified/` !  
 You should have a `css_min` and a `js_min` folder with a framelit.min file and a standalone
 directory. These are just built off of the default example files in the project (we'll get rid of
 them later)
 
 ### Your first dev build ###
 1. Type `grunt dev` and hit enter.
-2. Go check out the `./src/static/minified/`!  
+2. Go check out the `./src/static/minified/` !  
 You will have a `framelit.min.css` and `framelit.min.js` files still, but they're just proxy files
 that will load the other files that you'll now see in the minified directories. This is especially
 good for debugging. You'll also notice this build was much faster than the closure compiled 
 production build you tried above.
+
+### Running Express ###
+1. Type `npm start` and that's pretty much it.
+2. Go to [127.0.0.1:3000](http://127.0.0.1:3000) and see your start page.
 
 In longer
 ----------
@@ -83,7 +89,6 @@ src
     `-- js
         |-- site
         `-- vendor
-
 ````
 
 * `site` -- Stuff you made!
@@ -115,7 +120,8 @@ src
         `-- standalone
             |-- site
             `-- vendor
-
-
 ````
+
+
+
 
