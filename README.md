@@ -15,13 +15,13 @@ You get:
 * __Sensible__ `.jshintrc`, `.gitignore`, and `package.json`
 * __A build script__ for compiling and minifying all your LESS/CSS and JS. Easy to include in your
 pages: just `framelet.css` and `framelet.js`!
-* __A JS testing setup__, should you decide to go for awesome dev practice right out of the box.
-* __Travis CI integration__ so you can get your best practice on from the very start.
 * __A dev build target__ that's super fast, keeps everything unminified, in its own files for
 debugging, and *still* uses just `framelit.css` and `framelit.js`. No more dev specific including
 for you!
 * __A lightweight server__ using Express. Don't want it? Toss it out! This is just to get you 
 started if Node/Express is your thing.
+* (coming soon) __A JS testing setup__, should you decide to go for awesome dev practice right out of the box.
+* (coming soon) __Travis CI setup__ so you can get your best practice on from the very start.
 
 Just clone and go!
 
