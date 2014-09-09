@@ -31,7 +31,8 @@
     "build": "node_modules/grunt-cli/bin/grunt",
     "dev": "node_modules/grunt-cli/bin/grunt dev",
     "cleaninstall": "rm -rf node_modules/; npm install --production;",
-    "start": "node ./bootstrap_www"
+    "start": "node ./bootstrap_www",
+    "removeexamples": "find -E . -regex '.*example\\.(js|css|less)' -delete"
   },
   "engineStrict": true,
   "private": true
