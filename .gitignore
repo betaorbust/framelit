@@ -1,5 +1,6 @@
 node_modules/*
 src/static/minified/*
+tests/coverage/*
 npm-debug.log
 *.sublime-project
 *.sublime-workspace
