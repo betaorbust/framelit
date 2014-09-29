@@ -1,6 +1,8 @@
 Framelit v0.1.0
 ================
 
+![Travis CI status](https://travis-ci.org/betaorbust/framelit.svg?branch=master)
+
 In short
 ---------
 Normally, the first thing you do when starting a project is saddle yourself with technical debt.
