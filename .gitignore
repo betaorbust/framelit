@@ -3,3 +3,5 @@ src/static/minified/*
 npm-debug.log
 *.sublime-project
 *.sublime-workspace
+.DS_Store
+/*.env
