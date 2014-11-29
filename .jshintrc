@@ -20,7 +20,6 @@
 		"console",		// because console isn"t in debug?
 		"_gaq",		// Google Analytics global
 		"YT",			// YouTube player
-		"_gaq",		// Google Analyitics
 
 		// All the jasmine globals
 		"jasmine",

@@ -1,7 +1,8 @@
+/*jslint node: true */
 'use strict';
 var express = require('express');
 var path = require('path');
-var favicon = require('static-favicon');
+var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
@@ -16,10 +17,10 @@ app.engine('html', require('ejs').renderFile);
 app.set('view engine', 'html');
 
 // More middleware setup
-app.use(favicon());
+app.use(favicon(__dirname + '/src/static/images/favicon.ico'));
 app.use(logger('dev'));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Set up the static serving locations
