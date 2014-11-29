@@ -3,6 +3,10 @@ src/static/minified/*
 tests/coverage/*
 npm-debug.log
 *.sublime-project
+<<<<<<< HEAD
 *.sublime-workspace
 .DS_Store
 /*.env
+=======
+*.sublime-workspace
+>>>>>>> FETCH_HEAD
