@@ -7,6 +7,26 @@
 		<h1>Welcome!</h1>
 		<p>This is the base page for your new app!</p>
 
+		<!-- Load jquery. Fall back to local jQuery copy if the CDN is down. -->
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+		<script>
+			'use strict';
+			/*jslint evil: true */
+			if(!window.jQuery){
+				document.write('\x3Cscript src="/media/js/standalone/vendor/jquery/jquery-2.1.1.min.js">\x3C/script>');
+			}
+		</script>
+
+		<!-- Load Angular. Fall back to lacal Angular copy if the CDN is down. -->
+		<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.4/angular.min.js"></script>
+		<script>
+			'use strict';
+			/*jslint evil: true */
+			if(!window.angular){
+				document.write('\x3Cscript src="/media/js/standalone/vendor/angular/angular.min.js">\x3C/script>');
+			}
+		</script>
+
 		<!-- Loading script payload last on the page -->
 		<script src="/media/js/framelit.min.js"></script>
 	</body>
