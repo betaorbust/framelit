@@ -49,7 +49,8 @@
   "scripts": {
     "build": "node_modules/grunt-cli/bin/grunt",
     "dev": "node_modules/grunt-cli/bin/grunt dev",
-    "cleaninstall": "rm -rf node_modules/; npm install --production;",
+    "cleaninstall": "rm -rf node_modules/; npm install;",
+    "cleaninstallprod": "rm -rf node_modules/; npm install --production;",
     "start": "node ./bootstrap_www",
     "removeexamples": "find -E . -regex '.*example\\.(js|css|less)' -delete",
     "test": "ulimit -S -n 512; node_modules/karma/bin/karma start --single-run",
