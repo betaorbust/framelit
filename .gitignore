@@ -1,8 +1,24 @@
+# System Files
+.DS_Store
+
+# Installed Node modules
 node_modules/*
+
+# Build and test things not to commit
 src/static/minified/*
 tests/coverage/*
 npm-debug.log
+
+# Sublime files
 *.sublime-project
 *.sublime-workspace
-.DS_Store
+
+# Environment Files
 /*.env
+
+# Git cruft
+*.BACKUP.*
+*.BASE.*
+*.LOCAL.*
+*.REMOTE.*
+*.orig
