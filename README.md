@@ -1,4 +1,4 @@
-Framelit v0.1.0
+Framelit v0.2.0
 ================
 
 ![Travis CI status](https://travis-ci.org/betaorbust/framelit.svg?branch=master)
