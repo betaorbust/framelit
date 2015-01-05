@@ -2,6 +2,7 @@ Framelit v0.1.0
 ================
 
 ![Travis CI status](https://travis-ci.org/betaorbust/framelit.svg?branch=master)
+![NPM Dependencies Status](https://david-dm.org/betaorbust/framelit.svg);
 
 In short
 ---------
@@ -20,12 +21,12 @@ pages: just `framelet.css` and `framelet.js`!
 * __A dev build target__ that's super fast, keeps everything unminified, in its own files for
 debugging, and *still* uses just `framelit.css` and `framelit.js`. No more dev specific including
 for you!
-* __A lightweight server__ using Express. Don't want it? Toss it out! This is just to get you 
+* __A lightweight server__ using Express. Don't want it? Toss it out! This is just to get you
 started if Node/Express is your thing.
-* (coming soon) __A JS testing setup__, should you decide to go for awesome dev practice right out of the box.
-* (coming soon) __Travis CI setup__ so you can get your best practice on from the very start.
+* __A JS testing setup__, should you decide to go for awesome dev practice right out of the box.
+* __Travis CI setup__ so you can get your best practice on from the very start.
 
-Just clone and go!
+Just fork and go!
 
 
 Quickstart
@@ -36,7 +37,7 @@ Quickstart
 so we've gotta get our JAR on.
 
 ### Initializing the project ###
-1. [Clone](https://github.com/betaorbust/framelit) or 
+1. [Clone](https://github.com/betaorbust/framelit) or
 [download](https://github.com/betaorbust/framelit/archive/master.zip) the project.
 2. Open your terminal and head over to wherever you put the project, let's say
 `~/Documents/framelit`.
@@ -44,17 +45,17 @@ so we've gotta get our JAR on.
 
 ### Your first build ###
 1. Type `grunt` and hit enter.
-2. Go check out the `./src/static/minified/` !  
+2. Go check out the `./src/static/minified/` !
 You should have a `css_min` and a `js_min` folder with a framelit.min file and a standalone
 directory. These are just built off of the default example files in the project (we'll get rid of
 them later)
 
 ### Your first dev build ###
 1. Type `grunt dev` and hit enter.
-2. Go check out the `./src/static/minified/` !  
+2. Go check out the `./src/static/minified/` !
 You will have a `framelit.min.css` and `framelit.min.js` files still, but they're just proxy files
 that will load the other files that you'll now see in the minified directories. This is especially
-good for debugging. You'll also notice this build was much faster than the closure compiled 
+good for debugging. You'll also notice this build was much faster than the closure compiled
 production build you tried above.
 
 ### Running Express ###
