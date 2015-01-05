@@ -51,7 +51,8 @@ module.exports = function(grunt) {
 	// JS LOCATIONS
 	// ------------
 	var JS_VENDOR = [
-			//'vendor/jquery/*min.js',
+			'vendor/jquery/*.min.js',
+			'vendor/angular/*.min.js',
 			'vendor/{,**/}*.js'
 		],
 		JS_VENDOR_SOURCE_MAPS = [
