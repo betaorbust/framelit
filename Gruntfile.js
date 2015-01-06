@@ -75,6 +75,7 @@ module.exports = function(grunt) {
 		// less file versions as this is used both pre and post less-ification.
 		//'vendor/bootstrap/bootstrap.(less|css)'
 		CSS_SITE = [
+			'site/base.less', // If you're using the default bootstrap overwrite keep this!
 			'site/{,**/}*.less'
 		],
 		CSS_STANDALONE_SITE_PATH = [

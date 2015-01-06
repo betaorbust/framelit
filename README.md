@@ -25,6 +25,7 @@ for you!
 started if Node/Express is your thing.
 * __A JS testing setup__, should you decide to go for awesome dev practice right out of the box.
 * __Travis CI setup__ so you can get your best practice on from the very start.
+* __Some Starter Libraries__ You get Angular, jQuery, and Bootstrap CSS out of the box. Don't like em? Don't use em.
 
 Just fork and go!
 
